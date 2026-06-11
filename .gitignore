@@ -23,6 +23,7 @@ pnpm-debug.log*
 !.env.example
 
 # Local editor / assistant state
+.idea/
 .claude/
 AGENT.md
 

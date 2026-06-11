@@ -18,6 +18,7 @@ const CIVS: Record<string, CivInfo> = {
   jin_dynasty:         { name: '金朝',         flag: 'jin_dynasty.png' },
   house_of_lancaster:  { name: '兰开斯特王朝', flag: 'lancaster.png' },
   macedonians:         { name: '马其顿',       flag: 'macedonian.png' },
+  macedonian_dynasty:  { name: '马其顿',       flag: 'macedonian.png' },
   malians:             { name: '马里',         flag: 'malians.png' },
   mongols:             { name: '蒙古',         flag: 'mongols.png' },
   order_of_the_dragon: { name: '龙骑士团',     flag: 'orderofthedragon.png' },

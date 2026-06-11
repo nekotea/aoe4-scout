@@ -35,10 +35,36 @@ export function getLastGame(profileId: number): Promise<Game> {
   return get<Game>(`/players/${profileId}/games/last`)
 }
 
-/** 拉取某玩家最近对局列表 */
-export async function getPlayerGames(profileId: number, limit = 50): Promise<Game[]> {
-  const data = await get<GamesListResponse>(`/players/${profileId}/games?limit=${limit}`)
-  return data.games ?? []
+const GAMES_PAGE_SIZE = 50
+
+/** 拉取某玩家某一页最近对局；aoe4world 固定每页 50 条，不支持 limit。 */
+export async function getPlayerGamesPage(profileId: number, page: number): Promise<GamesListResponse> {
+  return get<GamesListResponse>(`/players/${profileId}/games?page=${page}`)
+}
+
+/** 拉取某玩家最近对局列表；内部按页拼接到 maxCount 条。 */
+export async function getPlayerGames(profileId: number, maxCount = GAMES_PAGE_SIZE): Promise<Game[]> {
+  const games: Game[] = []
+  const seen = new Set<number>()
+  let page = 1
+
+  while (games.length < maxCount) {
+    const data = await getPlayerGamesPage(profileId, page)
+    const pageGames = data.games ?? []
+    if (!pageGames.length) break
+
+    for (const game of pageGames) {
+      if (seen.has(game.game_id)) continue
+      seen.add(game.game_id)
+      games.push(game)
+      if (games.length >= maxCount) break
+    }
+
+    if (pageGames.length < GAMES_PAGE_SIZE) break
+    page += 1
+  }
+
+  return games.slice(0, maxCount)
 }
 
 /**

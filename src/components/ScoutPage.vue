@@ -5,11 +5,14 @@ import { searchPlayers } from '../api/aoe4world'
 import { useScout } from '../stores/scout'
 import { useAllies } from '../stores/allies'
 import { useTactics } from '../stores/tactics'
+import { useHistoryAnalysis } from '../stores/history'
 import PlayerCard from './PlayerCard.vue'
+import HistoryAnalysis from './HistoryAnalysis.vue'
 
 const { target, game, tracking, loading, error, setTarget, setTracking } = useScout()
 const { allies, isAlly, toggleAlly } = useAllies()
 const { load: loadTactic, getTactic } = useTactics()
+const { loadForGame: loadHistory } = useHistoryAnalysis()
 
 // 对局数据更新后，为双方每个玩家拉取战术分析（同文明最近完成局）
 watch(game, (g) => {
@@ -97,6 +100,11 @@ const enemyTeams = computed<PlayerInGame[]>(() => {
   const teams = game.value?.teams ?? []
   return teams.filter((t) => t !== friendlyTeam.value).flat()
 })
+
+watch(() => game.value?.game_id, (gameId) => {
+  if (!gameId) return
+  loadHistory(gameId, enemyTeams.value)
+}, { immediate: true })
 
 function playerToAlly(p: PlayerInGame): StoredAlly {
   return {
@@ -234,6 +242,8 @@ function markTargetAlly() {
           />
         </div>
       </div>
+
+      <HistoryAnalysis style="margin-top: 12px;" :allies="allies" />
     </template>
 
     <v-empty-state
