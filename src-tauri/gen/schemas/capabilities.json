@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"主窗口默认能力：允许通过 Rust 侧 HTTP 访问 aoe4world（绕过 summary 接口的 CORS 限制）","local":true,"windows":["main"],"permissions":["core:default",{"identifier":"http:default","allow":[{"url":"https://aoe4world.com/*"},{"url":"https://*.aoe4world.com/*"}]}]}}
