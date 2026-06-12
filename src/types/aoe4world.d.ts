@@ -217,6 +217,37 @@ export interface SummaryResources {
   technology: number[]
   society: number[]
   total: number[]
+  /** 资源存量随时间变化 */
+  food?: number[]
+  gold?: number[]
+  wood?: number[]
+  stone?: number[]
+  /** 累计采集量随时间变化 */
+  foodGathered?: number[]
+  goldGathered?: number[]
+  woodGathered?: number[]
+  stoneGathered?: number[]
+}
+
+export interface BuildOrderItem {
+  id: string
+  /** 如 icons/races/jin/units/mounted_villager，末段即名称 */
+  icon: string
+  pbgid: number
+  type: 'Unit' | 'Building' | 'Technology' | 'Animal' | string
+  /** 各次完成时间（秒）；起始单位为 0 */
+  finished: number[]
+  constructed: number[]
+}
+
+export interface SummaryLandmark {
+  pbgid: number
+  gameTime: number
+  minAge: number
+  /** 非 null 表示该地标用于升本，值为升到的时代 */
+  newAge: number | null
+  name: string
+  icon: string
 }
 
 export interface SummaryPlayer {
@@ -229,6 +260,8 @@ export interface SummaryPlayer {
   /** key 如 feudalAge / castleAge / imperialAge，值为发生时间（秒）数组 */
   actions: Record<string, number[]>
   resources: SummaryResources
+  buildOrder?: BuildOrderItem[]
+  analysis?: { landmarks?: SummaryLandmark[] }
 }
 
 export interface GameSummary {
@@ -250,6 +283,8 @@ export interface TacticData {
   military: number[]
   /** 升本时间（秒）：feudal/castle/imperial，未升则缺省 */
   ageUps: { age: 2 | 3 | 4; at: number }[]
+  /** 该玩家在来源对局中的原始 summary 数据，供 LLM 开局分析使用 */
+  summaryPlayer: SummaryPlayer
 }
 
 // ─── Locally stored ally ──────────────────────────────────────────────────────

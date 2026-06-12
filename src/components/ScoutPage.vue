@@ -8,6 +8,7 @@ import { useTactics } from '../stores/tactics'
 import { useHistoryAnalysis } from '../stores/history'
 import PlayerCard from './PlayerCard.vue'
 import HistoryAnalysis from './HistoryAnalysis.vue'
+import OpeningAnalysis from './OpeningAnalysis.vue'
 
 const { target, game, tracking, loading, error, setTarget, setTracking } = useScout()
 const { allies, isAlly, toggleAlly } = useAllies()
@@ -244,6 +245,8 @@ function markTargetAlly() {
       </div>
 
       <HistoryAnalysis style="margin-top: 12px;" :allies="allies" />
+
+      <OpeningAnalysis :game-id="game.game_id" :enemies="enemyTeams" />
     </template>
 
     <v-empty-state

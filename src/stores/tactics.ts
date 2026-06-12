@@ -58,6 +58,7 @@ async function load(profileId: number, civ: string): Promise<void> {
         const at = me.actions?.[ak]?.[0]
         return at != null && at <= CUTOFF ? [{ age, at }] : []
       }),
+      summaryPlayer: me,
     }
   } catch {
     // 拉取失败不缓存，下次仍可重试
