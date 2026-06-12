@@ -9,6 +9,7 @@ export interface LlmSettings {
   apiKey: string
   model: string
   autoAnalyze: boolean
+  autoSpeak: boolean
 }
 
 // 单位中文名对照表（内嵌，避免运行时读文件）
@@ -35,6 +36,7 @@ function loadSettings(): LlmSettings {
     apiKey: '',
     model: 'mimo-v2.5-pro',
     autoAnalyze: false,
+    autoSpeak: false,
   }
   try {
     const raw = localStorage.getItem(LS_KEY)

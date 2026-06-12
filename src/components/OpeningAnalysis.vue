@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import type { PlayerInGame, SummaryPlayer } from '../types/aoe4world'
 import { useLlmAnalysis } from '../stores/llm'
 import { useTactics } from '../stores/tactics'
@@ -41,6 +41,59 @@ function onGenerate() {
 watch(dataPending, (pending) => {
   if (!pending && settings.autoAnalyze && !isCurrent.value && !state.loading) {
     onGenerate()
+  }
+})
+
+// ─── TTS 朗读 ─────────────────────────────────────────────────────
+const speaking = ref(false)
+
+/** 剥离 Markdown 标记，只留纯文本供朗读 */
+function stripMd(text: string): string {
+  return text
+    .replace(/^#{1,4} /gm, '')   // 标题符号
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/^[-*] /gm, '')      // 列表符号
+    .replace(/^---$/gm, '。')     // 分割线读成停顿
+    .trim()
+}
+
+function onSpeak() {
+  if (!state.report || !window.speechSynthesis) return
+  if (speaking.value) {
+    window.speechSynthesis.cancel()
+    speaking.value = false
+    return
+  }
+  const utt = new SpeechSynthesisUtterance(stripMd(state.report))
+  utt.lang = 'zh-CN'
+  utt.rate = 1.1
+  utt.onend = () => { speaking.value = false }
+  utt.onerror = () => { speaking.value = false }
+  speaking.value = true
+  window.speechSynthesis.speak(utt)
+}
+
+onUnmounted(() => { window.speechSynthesis?.cancel() })
+
+/** 从完整报告中提取第一部分（遇到第一个 --- 或"第二部分"截断） */
+function extractFirstSection(report: string): string {
+  const cut = report.search(/^---$|^第二部分/m)
+  return (cut > 0 ? report.slice(0, cut) : report).trim()
+}
+
+// 报告更新时：停止当前朗读；若开启了 autoSpeak 则朗读第一部分
+watch(() => state.report, (report) => {
+  window.speechSynthesis?.cancel()
+  speaking.value = false
+  if (report && settings.autoSpeak && isCurrent.value && window.speechSynthesis) {
+    const utt = new SpeechSynthesisUtterance(stripMd(extractFirstSection(report)))
+    utt.lang = 'zh-CN'
+    utt.rate = 1.1
+    utt.onend = () => { speaking.value = false }
+    utt.onerror = () => { speaking.value = false }
+    speaking.value = true
+    window.speechSynthesis.speak(utt)
   }
 })
 
@@ -94,6 +147,14 @@ function renderMd(text: string): string {
           {{ isCurrent && state.report ? '重新生成' : '生成分析' }}
         </v-btn>
         <v-btn
+          v-if="isCurrent && state.report && !state.loading"
+          size="small"
+          variant="text"
+          :icon="speaking ? 'mdi-stop' : 'mdi-volume-high'"
+          :color="speaking ? 'primary' : undefined"
+          @click="onSpeak"
+        />
+        <v-btn
           size="small"
           variant="text"
           icon="mdi-cog-outline"
@@ -129,6 +190,14 @@ function renderMd(text: string): string {
         <v-switch
           v-model="settings.autoAnalyze"
           label="数据就绪后自动生成分析"
+          density="compact"
+          color="primary"
+          hide-details
+          class="auto-switch"
+        />
+        <v-switch
+          v-model="settings.autoSpeak"
+          label="分析报告完成后立即朗读第一部分"
           density="compact"
           color="primary"
           hide-details
